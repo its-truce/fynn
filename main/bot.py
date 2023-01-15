@@ -51,7 +51,7 @@ async def on_reaction_add(reaction, member):
 
 @bot.tree.command(description="Sets up reaction logging.")
 @app_commands.describe(channel = "The channel to log to.", on = "Turn reaction logging on or off.")
-@commands.has_guild_permissions(manage_messages=True)
+@app_commands.checks.has_permissions(manage_messages=True)
 async def reaction_log(interaction: discord.Interaction, on: bool, channel: discord.TextChannel):
     if on:
         await interaction.response.send_message(f"Reaction detection will now be reported in {channel.mention}.", ephemeral=False)
@@ -86,7 +86,7 @@ async def on_message_delete(message):
 
 @bot.tree.command(description="Set up message deletion logging.")
 @app_commands.describe(channel = "The channel to log to.", on = "Turn deletion logging on or off.")
-@commands.has_guild_permissions(manage_messages=True)
+@app_commands.checks.has_permissions(manage_messages=True)
 async def deletion_log(interaction: discord.Interaction, on: bool, channel: discord.TextChannel):
     if on:
         await interaction.response.send_message(f"Deletion logging will now be reported in {channel.mention}.", ephemeral=False)
@@ -123,7 +123,7 @@ async def on_message_edit(before, after):
 
 @bot.tree.command(description="Set up message edit logging.")
 @app_commands.describe(channel = "The channel to log to.", on = "Turn edit logging on or off.")
-@commands.has_guild_permissions(manage_messages=True)
+@app_commands.checks.has_permissions(manage_messages=True)
 async def edit_log(interaction: discord.Interaction, on: bool, channel: discord.TextChannel):
     if on:
         await interaction.response.send_message(f"Edited message logging will now be reported in {channel.mention}.", ephemeral=False)
@@ -139,20 +139,41 @@ async def edit_log(interaction: discord.Interaction, on: bool, channel: discord.
             await interaction.response.send_message(f"Edited message logging has been stopped for this guild.")
             edit_logs.commit()
 
-# Member List
-@bot.tree.command(description="Sends total number of members, bots, and humans.")
-async def members(interaction: discord.Interaction):
-    guild = interaction.guild
-    lst = guild.members
-    bot = 0
-    mem = 0
-    for member in lst:
-        if member.bot:
-            bot += 1
+# Reporting Setup
+report_logs = SqliteDict("./report_logs.sqlite")
+
+@bot.tree.command(description="Set up message reporting.")
+@app_commands.describe(channel = "The channel to report to.", on = "Turn reporting on or off.")
+@app_commands.checks.has_permissions(manage_messages=True)
+async def reporting(interaction: discord.Interaction, on: bool, channel: discord.TextChannel):
+    if on:
+        await interaction.response.send_message(f"Reported messages will now be reported in {channel.mention}.", ephemeral=False)
+        guild_id = interaction.guild.id
+        report_logs[guild_id] = channel.id
+        report_logs.commit()
+    elif not on:
+        guild_id = interaction.guild.id
+        if guild_id not in report_logs:
+            await interaction.response.send_message(f"Reporting has not been setup!")
         else:
-            mem +=1
-    em = discord.Embed(color=0x2F3136, title="Member Count", description=f"**Bots:** {bot}\n**Humans:** {mem}\n**Total:** {mem + bot}")
-    await interaction.response.send_message(embed = em)
+            del report_logs[guild_id]
+            await interaction.response.send_message(f"Reporting has been stopped for this guild.")
+            report_logs.commit()
+
+# Report Message
+@bot.tree.context_menu()
+@app_commands.describe(message = "The message to be reported")
+async def report(interaction: discord.Interaction, message: discord.Message):
+    guild_id = interaction.guild.id
+    if guild_id not in report_logs:
+        await interaction.response.send_message("Reporting has not been setup!", ephemeral=True)
+    else:
+        await interaction.response.send_message("Message has been reported.", ephemeral=True)
+        em = discord.Embed(color=0x2F3136, title=f"You have been reported.", description=f"One of your messages was reported in {message.guild.name} by another user.\n\nIt has been sent to the server's staff for consideration.")
+        await message.author.send(embed=em) 
+        channel_id = report_logs[guild_id]
+        emr = discord.Embed(color=0x2F3136, title=f"Message Reported!", description=f"**Content:** {message.content}\n**Author:** {message.author}\n**Message:** [Click here!]({message.jump_url})\n**Channel:** {message.channel.mention}")
+        await bot.get_channel(channel_id).send(embed=emr)
 
 # User Info
 @bot.tree.command(description="Displays info about the member.")
@@ -171,8 +192,20 @@ async def user_info(interaction: discord.Interaction, member: discord.Member):
     em.set_thumbnail(url=member.display_avatar.url)
     await interaction.response.send_message(embed = em)
 
-@bot.tree.command(description="Reports a message to the staff. Only works if reporting has been setup.")
-@app_commands.describe(message = "The message to be reported")
+# Member List
+@bot.tree.command(description="Sends total number of members, bots, and humans.")
+async def members(interaction: discord.Interaction):
+    guild = interaction.guild
+    lst = guild.members
+    bot = 0
+    mem = 0
+    for member in lst:
+        if member.bot:
+            bot += 1
+        else:
+            mem +=1
+    em = discord.Embed(color=0x2F3136, title="Member Count", description=f"**Bots:** {bot}\n**Humans:** {mem}\n**Total:** {mem + bot}")
+    await interaction.response.send_message(embed = em)
 
 # Error Handling
 @bot.event
