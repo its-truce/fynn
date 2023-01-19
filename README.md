@@ -20,3 +20,9 @@ Fynn operates through slash commands, and you can bring up all his commands by t
 * `/edit_log`: Set up message edit logging.
 * `/deletion_log`: Set up message deletion logging.
 * `/reaction_log`: Set up reaction logging.
+* `/redirect`: Redirect messages from one channel to another
+
+# To Do
+* Add a way to stop redirecting
+* Clean up logging code
+* Try to use webhooks for redirecting
