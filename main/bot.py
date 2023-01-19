@@ -12,23 +12,13 @@ activity = discord.Game(name="Slash Commands")
 
 bot = commands.Bot(command_prefix=".", intents=intents, activity=activity)
 
+@bot.event
+async def on_ready():
+    await bot.change_presence(activity=activity, status=discord.Status.idle)
+
 @bot.command()
 async def sync(ctx):
     await bot.tree.sync()
-
-@bot.tree.command(description="Sample text.")
-async def lorem(interaction: discord.Interaction):
-    await interaction.response.send_message("Lorem ipsum dolor sit amet.", ephemeral=False)
-
-@bot.tree.command(description="Says what you say.")
-@app_commands.describe(message = "Your message")
-async def say(interaction: discord.Interaction, message: str):
-    await interaction.response.send_message(f"{message}", ephemeral=False)
-
-@bot.tree.command(description="Adds two numbers.")
-@app_commands.describe(first = "The first number", second = "The second number")
-async def add(interaction: discord.Interaction, first: float, second: float):   
-    await interaction.response.send_message(f"{first} + {second} is equal to {first + second}.", ephemeral=False)
 
 # Reaction Logging
 rec: discord.TextChannel = None
@@ -174,6 +164,34 @@ async def report(interaction: discord.Interaction, message: discord.Message):
         channel_id = report_logs[guild_id]
         emr = discord.Embed(color=0x2F3136, title=f"Message Reported!", description=f"**Content:** {message.content}\n**Author:** {message.author}\n**Message:** [Click here!]({message.jump_url})\n**Channel:** {message.channel.mention}")
         await bot.get_channel(channel_id).send(embed=emr)
+
+# Redirect Messages
+redirect_logs = SqliteDict("./redirect_logs.sqlite")
+
+@bot.event
+async def on_message(message):
+    await bot.process_commands(message)
+    if message.channel.id not in redirect_logs:
+        pass
+    else:
+        em = discord.Embed(color=0x2F3136, title="Message Redirect", description=f"**Message**: {message.content}\n**Author**: {message.author}")
+        em.set_footer(text = f"Reposted from #{message.channel}")
+        await bot.get_channel(redirect_logs[message.channel.id]).send(embed=em)
+
+@bot.tree.command(description="Redirect messages from one channel to another.")
+@app_commands.describe(channel1 = "Channel to redirect messages from.", channel2 = "Channel to redirect messages to.")
+async def redirect(interaction: discord.Interaction, channel1: discord.TextChannel, channel2: discord.TextChannel):
+    if channel1 == channel2:
+        await interaction.response.send_message("You can't redirect to the same channel.", ephemeral=False)
+    elif channel2.id in redirect_logs:
+        if redirect_logs[channel2.id] == channel1.id:
+            await interaction.response.send_message("You can't redirect here.", ephemeral=False)
+        else:
+            redirect_logs[channel1.id] = channel2.id
+            await interaction.response.send_message(f"Messages will be reposted from {channel1.mention} to {channel2.mention}")
+    elif channel2.id not in redirect_logs:
+        redirect_logs[channel1.id] = channel2.id
+        await interaction.response.send_message(f"Messages will be reposted from {channel1.mention} to {channel2.mention}")
 
 # User Info
 @bot.tree.command(description="Displays info about the member.")
