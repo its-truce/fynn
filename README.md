@@ -7,7 +7,7 @@
 </div>
 
 # About Fynn
-
 Fynn was made for me to learn [discord.py](https://github.com/Rapptz/discord.py): it was my first bot, ever! I'm still learning dpy (and developing Fynn), but it already has a lot of functionality that aids with server moderation big time!
 
-
+# Commands
+Fynn operates through slash commands, and you can bring up all his commands by typing `/` and then clicking on Fynn's [profile picture](https://github.com/its-truce/fynn/blob/main/main/pfp.png).
