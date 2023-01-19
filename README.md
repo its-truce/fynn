@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img src="https://user-images.githubusercontent.com/107202816/213439483-e86a70d4-ce02-42bc-af80-820fc38c2e8d.png" align="center">
+  <img src="https://user-images.githubusercontent.com/107202816/213440778-3c7295e8-7a62-49cc-b33a-a54e063c4b37.png" align="center">
   <br>
   <strong>Fynn: Step Up Your Moderation</strong>
   <br>
