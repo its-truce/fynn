@@ -1,9 +1,8 @@
 
 <div align="center">
-  <img src="https://user-images.githubusercontent.com/107202816/212486673-bbb7a63c-e7b5-4f02-bef1-e101f2c1bcae.png" align="center">
+  <img src="https://user-images.githubusercontent.com/107202816/213438870-e39511aa-dca0-4f9e-8110-1e391b5d42b0.png" align="center">
   <br>
-  <strong><i>Fynn Bot </i></strong>
+  <strong>Fynn: Step Up Your Moderation</strong>
   <br>
   <br>
 Fynn is a discord bot that helps in server moderation: you can log everything with it!
-
