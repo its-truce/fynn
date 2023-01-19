@@ -11,3 +11,11 @@ Fynn was made for me to learn [discord.py](https://github.com/Rapptz/discord.py)
 
 # Commands
 Fynn operates through slash commands, and you can bring up all his commands by typing `/` and then clicking on Fynn's [profile picture](https://github.com/its-truce/fynn/blob/main/main/pfp.png).
+
+* `/members`: Sends total number of members, bots, and humans.
+* `/user_info`: Displays info about a member.
+* `/reporting`: Set up message reporting.
+* `/report`: Report a message. Only works if reporting has been setup for the guild.
+* `/edit_log`: Set up message edit logging.
+* `/deletion_log`: Set up message deletion logging.
+* `/reaction_log`: Set up reaction logging.
