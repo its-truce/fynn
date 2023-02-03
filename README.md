@@ -21,6 +21,7 @@ Fynn operates through slash commands, and you can bring up all his commands by t
 * `/deletion_log`: Set up message deletion logging.
 * `/reaction_log`: Set up reaction logging.
 * `/redirect`: Redirect messages from one channel to another
+* `/monitor`: Monitor (most) activities performed by a specific member.
 
 # To Do
 * Add a way to stop redirecting
